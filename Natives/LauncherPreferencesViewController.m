@@ -1,4 +1,5 @@
 #import <Foundation/Foundation.h>
+#import <AVFoundation/AVFoundation.h>
 
 #import "DBNumberedSlider.h"
 #import "HostManagerBridge.h"
@@ -253,7 +254,34 @@
             @{@"key": @"allow_microphone",
               @"hasDetail": @YES,
               @"icon": @"mic",
-              @"type": self.typeSwitch
+              @"type": self.typeSwitch,
+              @"action": ^(BOOL enabled){
+                  if (!enabled) return;
+                  AVAudioSession *session = AVAudioSession.sharedInstance;
+                  if (session.recordPermission == AVAudioSessionRecordPermissionGranted) {
+                      NSLog(@"[Microphone] Permission already granted");
+                      return;
+                  }
+                  if (session.recordPermission == AVAudioSessionRecordPermissionDenied) {
+                      setPrefBool(@"video.allow_microphone", NO);
+                      [self.tableView reloadData];
+                      showDialog(localize(@"Microphone", nil),
+                          @"Microphone access is denied. Open iPad Settings > Apps > NiyoLauncher > Microphone, allow access, then enable this option again.");
+                      return;
+                  }
+                  NSLog(@"[Microphone] Requesting permission after user enabled microphone input");
+                  [session requestRecordPermission:^(BOOL granted) {
+                      dispatch_async(dispatch_get_main_queue(), ^{
+                          NSLog(@"[Microphone] Permission %@", granted ? @"granted" : @"denied");
+                          if (!granted) {
+                              setPrefBool(@"video.allow_microphone", NO);
+                              [self.tableView reloadData];
+                              showDialog(localize(@"Microphone", nil),
+                                  @"Microphone access was not granted. You can enable it later in iPad Settings > Apps > NiyoLauncher > Microphone.");
+                          }
+                      });
+                  }];
+              }
             },
             @{@"key": @"fix_simple_voice_chat_mod",
               @"hasDetail": @YES,
