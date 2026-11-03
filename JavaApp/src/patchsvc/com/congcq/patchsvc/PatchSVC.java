@@ -62,6 +62,26 @@ public class PatchSVC implements ClassFileTransformer {
 
     public static void premain(String args, Instrumentation instrumentation) {
         System.out.println("PatchSVC: premain called");
+        String bundle = System.getenv("BUNDLE_PATH");
+        if (bundle == null || bundle.isEmpty()) {
+            System.err.println("PatchSVC: ERROR - BUNDLE_PATH is not set; native codec libraries cannot be located");
+        } else {
+            String[] libraries = {
+                "libopus4j.dylib",
+                "liblame4j.dylib",
+                "librnnoise4j.dylib",
+                "libspeex4j.dylib"
+            };
+            File codecDir = new File(bundle, "Frameworks/svc");
+            System.out.println("PatchSVC: codec directory=" + codecDir.getAbsolutePath()
+                    + " exists=" + codecDir.isDirectory());
+            for (String library : libraries) {
+                File file = new File(codecDir, library);
+                System.out.println("PatchSVC: codec " + library + " exists=" + file.isFile()
+                        + " readable=" + file.canRead()
+                        + " bytes=" + (file.isFile() ? file.length() : 0));
+            }
+        }
         instrumentation.addTransformer(new PatchSVC());
     }
 }
