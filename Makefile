@@ -435,7 +435,7 @@ payload: native dep_mg dep_mobilegl dep_mcmetal dep_ame_vulkan java jre assets
 	for sub in $(LWJGL_SUBS); do \
 		d=$(WORKINGDIR)/AngelAuraAmethyst.app/Frameworks/$$sub; \
 		[ -d "$$d" ] || continue; \
-		if [ -f "$$d/libSDL3.dylib" ]; then cp "$$d/libSDL3.dylib" "$$d/libSDL3_controlify.dylib" || exit 1; fi; \
+		# Keep one SDL3 image; Controlify is pointed at the same dylib below. \
 		for f in "$$d"/*.dylib; do \
 			install_name_tool -id "@rpath/$$sub/$$(basename "$$f")" "$$f" || exit 1; \
 		done; \
