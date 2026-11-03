@@ -255,6 +255,11 @@
               @"icon": @"mic",
               @"type": self.typeSwitch
             },
+            @{@"key": @"fix_simple_voice_chat_mod",
+              @"hasDetail": @YES,
+              @"icon": @"waveform",
+              @"type": self.typeSwitch
+            },
         ], @[
             // Control settings
             @{@"icon": @"gamecontroller"},

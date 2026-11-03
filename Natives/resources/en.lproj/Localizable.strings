@@ -496,3 +496,6 @@
 "content.version.beta" = "Beta";
 "content.version.alpha" = "Alpha";
 "content.version.recommended" = "Recommended";
+
+"preference.title.fix_simple_voice_chat_mod" = "Fix Simple Voice Chat";
+"preference.detail.fix_simple_voice_chat_mod" = "Apply compatibility patches for Simple Voice Chat mods.";
