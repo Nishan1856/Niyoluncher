@@ -36,12 +36,30 @@ public class PatchSVC implements ClassFileTransformer {
                 return classfileBuffer;
             }
 
-            DataInputStream dataInputStream = new DataInputStream(inputStream);
-            byte[] patched = new byte[inputStream.available()];
-            dataInputStream.readFully(patched);
-            dataInputStream.close();
+            // Do not rely on InputStream.available(): jar-backed streams are allowed
+            // to report only currently buffered bytes, which can produce truncated
+            // replacement classes and make the voice-chat codec module fail to load.
+            ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+            byte[] buffer = new byte[8192];
+            int count;
+            try {
+                while ((count = inputStream.read(buffer)) != -1) {
+                    outputStream.write(buffer, 0, count);
+                }
+            } finally {
+                inputStream.close();
+            }
+            byte[] patched = outputStream.toByteArray();
+            if (patched.length < 8 || patched[0] != (byte) 0xCA ||
+                    patched[1] != (byte) 0xFE || patched[2] != (byte) 0xBA ||
+                    patched[3] != (byte) 0xBE) {
+                System.err.println("PatchSVC: ERROR - Invalid replacement class for " + className
+                        + " (" + patched.length + " bytes)");
+                return classfileBuffer;
+            }
 
-            System.out.println("PatchSVC: SUCCESS - Patched " + className);
+            System.out.println("PatchSVC: SUCCESS - Patched " + className
+                    + " (" + patched.length + " bytes)");
             return patched;
 
         } catch (Exception e) {
