@@ -19,19 +19,35 @@ public class PojavLauncher {
     public static void main(String[] args) throws Throwable {
         // Skip calling to com.apple.eawt.Application.nativeInitializeApplicationDelegate()
         Beans.setDesignTime(true);
+        // Keep the launcher source portable: these are optional desktop-JRE
+        // internals and must not be linked at compile time on Linux/JDK 9+.
         try {
-            // Some places use macOS-specific code, which is unavailable on iOS
-            // In this case, try to get it to use Linux-specific code instead.
-            com.apple.eawt.Application.getApplication();
-            Class clazz = Class.forName("com.apple.eawt.Application");
-            Field field = clazz.getDeclaredField("sApplication");
-            field.setAccessible(true);
-            field.set(null, null);
-            sun.font.FontUtilities.isLinux = true;
+            Class<?> applicationClass = Class.forName("com.apple.eawt.Application");
+            try {
+                applicationClass.getMethod("getApplication").invoke(null);
+            } catch (Throwable ignored) {
+                // Some Apple desktop runtimes initialize this lazily.
+            }
+            Field applicationField = applicationClass.getDeclaredField("sApplication");
+            applicationField.setAccessible(true);
+            applicationField.set(null, null);
+        } catch (Throwable ignored) {
+            // Apple desktop APIs are absent on Linux and iOS.
+        }
+
+        try {
+            Class<?> fontUtilities = Class.forName("sun.font.FontUtilities");
+            Field isLinux = fontUtilities.getDeclaredField("isLinux");
+            isLinux.setAccessible(true);
+            isLinux.setBoolean(null, true);
+        } catch (Throwable ignored) {
+            // This JDK-internal flag is optional and may be module-protected.
+        }
+
+        try {
             System.setProperty("java.util.prefs.PreferencesFactory", "java.util.prefs.FileSystemPreferencesFactory");
-        } catch (Throwable th) {
-            // Not on JRE8, ignore exception
-            //Tools.showError(th);
+        } catch (Throwable ignored) {
+            // Keep the default preferences provider when unavailable.
         }
 
         Thread.currentThread().setUncaughtExceptionHandler(new Thread.UncaughtExceptionHandler() {
