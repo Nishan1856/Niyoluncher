@@ -230,7 +230,12 @@ int launchJVM(NSString *username, id launchTarget, int width, int height, int mi
         // Setup AME_RENDERER
         NSString *renderer = [PLProfiles resolveKeyForCurrentProfile:@"renderer"];
         gameHasVulkanBackend = versionHasVulkanBackend(launchTarget[@"id"]) || versionHasVulkanBackend(launchTarget[@"inheritsFrom"]);
-        if (gameHasVulkanBackend && ame_renderer_from_name(renderer.UTF8String) == AME_RENDERER_AUTO) {
+        if (gameHasVulkanBackend &&
+            !ame_renderer_is_vulkan_native(ame_renderer_from_name(renderer.UTF8String))) {
+            // Minecraft 26.2+ initializes its Vulkan path on iOS. Do not let a saved
+            // OpenGL/Zink/ANGLE renderer preference select an incompatible GL backend.
+            NSLog(@"[JavaLauncher] Minecraft %@ has a Vulkan backend; overriding renderer %@ with MoltenVK",
+                  launchTarget[@"id"], renderer);
             renderer = @RENDERER_NAME_MOLTENVK;
         }
         NSLog(@"[JavaLauncher] RENDERER is set to %@\n", renderer);
