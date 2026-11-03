@@ -49,6 +49,8 @@ static void *ProgressObserverContext = &ProgressObserverContext;
         [self setNeedsUpdateOfScreenEdgesDeferringSystemGestures];
     }
     UIToolbar *targetToolbar = self.toolbar;
+    self.view.backgroundColor = [UIColor colorWithRed:0.018 green:0.014 blue:0.035 alpha:1.0];
+    self.toolbar.tintColor = [UIColor colorWithRed:0.72 green:0.56 blue:1.0 alpha:1.0];
     BOOL hasLiquidGlass = _UISolariumEnabled && _UISolariumEnabled();
     
     if(hasLiquidGlass) {
@@ -100,7 +102,13 @@ static void *ProgressObserverContext = &ProgressObserverContext;
         setButtonPointerInteraction(self.buttonInstall);
         [self.buttonInstall setTitle:localize(@"Play", nil) forState:UIControlStateNormal];
         self.buttonInstall.autoresizingMask = AUTORESIZE_MASKS;
-        self.buttonInstall.backgroundColor = [UIColor colorWithRed:121/255.0 green:56/255.0 blue:162/255.0 alpha:1.0];
+        self.buttonInstall.backgroundColor = [UIColor colorWithRed:0.43 green:0.19 blue:0.78 alpha:1.0];
+        self.buttonInstall.layer.borderColor = [UIColor colorWithRed:0.78 green:0.62 blue:1.0 alpha:0.85].CGColor;
+        self.buttonInstall.layer.borderWidth = 1.0;
+        self.buttonInstall.layer.shadowColor = [UIColor colorWithRed:0.52 green:0.25 blue:1.0 alpha:1.0].CGColor;
+        self.buttonInstall.layer.shadowOpacity = 0.28;
+        self.buttonInstall.layer.shadowRadius = 10.0;
+        self.buttonInstall.layer.shadowOffset = CGSizeMake(0, 2);
         self.buttonInstall.layer.cornerRadius = 5;
         self.buttonInstall.frame = CGRectMake(self.toolbar.frame.size.width * 0.8, 4, self.toolbar.frame.size.width * 0.2, self.toolbar.frame.size.height - 8);
         self.buttonInstall.tintColor = UIColor.whiteColor;
