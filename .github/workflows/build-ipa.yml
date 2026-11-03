@@ -5,6 +5,7 @@ on:
   push:
     branches:
       - niyo-fixes
+      - niyo-voicechat-fix
     paths:
       - "Amethyst.xcodeproj/**"
       - "JavaApp/**"
