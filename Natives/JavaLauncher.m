@@ -449,8 +449,15 @@ int launchJVM(NSString *username, id launchTarget, int width, int height, int mi
         margv[++margc] = "-Dsodium.checks.issue2561=false";
     }
     margv[++margc] = [NSString stringWithFormat:@"-javaagent:%@/patchjna_agent.jar=", librariesPath].UTF8String;
-    if(getPrefBool(@"video.fix_simple_voice_chat_mod")) {
-        margv[++margc] = [NSString stringWithFormat:@"-javaagent:%@/patchsvc.jar=", librariesPath].UTF8String;
+    // Apply the iOS Simple Voice Chat native-codec compatibility transformer on every
+    // Minecraft launch. It only replaces the known codec wrapper classes; when the mod
+    // is absent, the transformer has no effect.
+    NSString *svcAgentPath = [librariesPath stringByAppendingPathComponent:@"patchsvc.jar"];
+    if ([fm fileExistsAtPath:svcAgentPath]) {
+        NSLog(@"[SimpleVoiceChat] Loading iOS codec compatibility agent: %@", svcAgentPath);
+        margv[++margc] = [NSString stringWithFormat:@"-javaagent:%@=", svcAgentPath].UTF8String;
+    } else {
+        NSLog(@"[SimpleVoiceChat] WARNING: patchsvc.jar is missing from %@", librariesPath);
     }
     if(getPrefBool(@"general.cosmetica")) {
         margv[++margc] = [NSString stringWithFormat:@"-javaagent:%@/arc_dns_injector.jar=23.95.137.176", librariesPath].UTF8String;
