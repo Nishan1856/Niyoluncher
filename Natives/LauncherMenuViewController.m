@@ -35,6 +35,7 @@
     LauncherMenuCustomItem *item = [[LauncherMenuCustomItem alloc] init];
     item.title = [vc title];
     item.imageName = [vc imageName];
+    // View controllers are put into an array to keep its state
     item.vcArray = @[vc];
     return item;
 }
@@ -53,20 +54,19 @@
 
 - (void)viewDidLoad {
     [super viewDidLoad];
-
-    UIColor *background = [UIColor colorWithRed:0.018 green:0.014 blue:0.035 alpha:1.0];
-    UIColor *violet = [UIColor colorWithRed:0.62 green:0.34 blue:1.0 alpha:1.0];
-    self.view.backgroundColor = background;
-    self.tableView.backgroundColor = background;
+    
+    self.isInitialVc = YES;
+    self.view.backgroundColor = [UIColor colorWithRed:0.018 green:0.014 blue:0.035 alpha:1.0];
+    self.tableView.backgroundColor = self.view.backgroundColor;
     self.tableView.separatorStyle = UITableViewCellSeparatorStyleNone;
     self.tableView.rowHeight = 58.0;
     self.tableView.contentInset = UIEdgeInsetsMake(8, 0, 18, 0);
-
+    
     UIImageView *titleView = [[UIImageView alloc] initWithImage:[UIImage imageNamed:@"AppLogo"]];
     [titleView setContentMode:UIViewContentModeScaleAspectFit];
     self.navigationItem.titleView = titleView;
     [titleView sizeToFit];
-
+    
     self.options = @[
         [LauncherMenuCustomItem vcClass:LauncherNewsViewController.class],
         [LauncherMenuCustomItem vcClass:LauncherProfilesViewController.class],
@@ -82,22 +82,28 @@
             [contentNavigationController performSelector:@selector(enterCustomControls)];
         }]];
     }
-    [self.options addObject:(id)[LauncherMenuCustomItem
+    [self.options addObject:
+     (id)[LauncherMenuCustomItem
           title:localize(@"launcher.menu.execute_jar", nil)
           imageName:@"MenuInstallJar" action:^{
         [contentNavigationController performSelector:@selector(enterModInstaller)];
     }]];
-    [self.options addObject:(id)[LauncherMenuCustomItem
+    
+    [self.options addObject:
+     (id)[LauncherMenuCustomItem
           title:localize(@"login.menu.sendlogs", nil)
           imageName:@"square.and.arrow.up" action:^{
         NSString *latestlogPath = [NSString stringWithFormat:@"file://%s/latestlog.old.txt", getenv("AME_HOME")];
         NSLog(@"Path is %@", latestlogPath);
         UIActivityViewController *activityVC;
         if (realUIIdiom != UIUserInterfaceIdiomTV) {
-            activityVC = [[UIActivityViewController alloc] initWithActivityItems:@[[NSURL URLWithString:latestlogPath]] applicationActivities:nil];
+            activityVC = [[UIActivityViewController alloc]
+                          initWithActivityItems:@[[NSURL URLWithString:latestlogPath]]
+                          applicationActivities:nil];
         } else {
             dlopen("/System/Library/PrivateFrameworks/SharingUI.framework/SharingUI", RTLD_GLOBAL);
-            activityVC = [[NSClassFromString(@"SFAirDropSharingViewControllerTV") alloc]
+            activityVC =
+            [[NSClassFromString(@"SFAirDropSharingViewControllerTV") alloc]
              performSelector:@selector(initWithSharingItems:)
              withObject:@[[NSURL URLWithString:latestlogPath]]];
         }
@@ -105,7 +111,7 @@
         activityVC.popoverPresentationController.sourceRect = titleView.bounds;
         [self presentViewController:activityVC animated:YES completion:nil];
     }]];
-
+    
     NSDateFormatter *dateFormatter = [[NSDateFormatter alloc] init];
     dateFormatter.dateFormat = @"MM-dd";
     NSString* date = [dateFormatter stringFromDate:NSDate.date];
@@ -116,31 +122,36 @@
             openLink(self, [NSURL URLWithString:@"https://youtu.be/DPMluEVUqS0"]);
         }]];
     }
-
+    
+    self.tableView.separatorStyle = UITableViewCellSeparatorStyleNone;
+    
     self.navigationController.toolbarHidden = NO;
-    UIActivityIndicatorView *toolbarIndicator = [[UIActivityIndicatorView alloc] initWithActivityIndicatorStyle:UIActivityIndicatorViewStyleMedium];
+    UIActivityIndicatorViewStyle indicatorStyle = UIActivityIndicatorViewStyleMedium;
+    UIActivityIndicatorView *toolbarIndicator = [[UIActivityIndicatorView alloc] initWithActivityIndicatorStyle:indicatorStyle];
     [toolbarIndicator startAnimating];
     self.toolbarItems = @[
         [[UIBarButtonItem alloc] initWithCustomView:toolbarIndicator],
         [[UIBarButtonItem alloc] init]
     ];
     self.toolbarItems[1].tintColor = UIColor.labelColor;
-
+    
+    // Setup the account button
     self.accountBtnItem = [self drawAccountButton];
+    
     [self updateAccountInfo];
-
+    
     NSIndexPath *indexPath = [NSIndexPath indexPathForRow:1 inSection:0];
     [self.tableView selectRowAtIndexPath:indexPath animated:YES scrollPosition:UITableViewScrollPositionNone];
     [self tableView:self.tableView didSelectRowAtIndexPath:indexPath];
     self.lastSelectedIndex = 1;
-
+    
     if (getEntitlementValue(@"get-task-allow")) {
         [self displayProgress:localize(@"login.jit.checking", nil)];
         if (isJITEnabled(false)) {
             [self displayProgress:localize(@"login.jit.enabled", nil)];
             [self displayProgress:nil];
         } else if (@available(iOS 17.0, *)) {
-            // JIT is requested through the supported external launch flow.
+            // enabling JIT for 17.0+ is done when we actually launch the game
         } else {
             [self enableJITWithAltKit];
         }
@@ -156,7 +167,6 @@
         [alert addAction:okAction];
         [self presentViewController:alert animated:YES completion:nil];
     }
-    (void)violet;
 }
 
 - (void)viewWillAppear:(BOOL)animated {
@@ -164,39 +174,36 @@
     [self restoreHighlightedSelection];
 }
 
-- (void)drawNiyoSelectionForCell:(UITableViewCell *)cell {
-    UIView *selected = [[UIView alloc] initWithFrame:cell.bounds];
-    selected.backgroundColor = [UIColor colorWithRed:0.36 green:0.16 blue:0.62 alpha:0.42];
-    selected.layer.cornerRadius = 12.0;
-    selected.layer.borderWidth = 1.0;
-    selected.layer.borderColor = [UIColor colorWithRed:0.70 green:0.52 blue:1.0 alpha:0.85].CGColor;
-    cell.selectedBackgroundView = selected;
-}
-
 - (UIBarButtonItem *)drawAccountButton {
     if (!self.accountBtnItem) {
         self.accountButton = [UIButton buttonWithType:UIButtonTypeCustom];
         [self.accountButton addTarget:self action:@selector(selectAccount:) forControlEvents:UIControlEventPrimaryActionTriggered];
         self.accountButton.contentHorizontalAlignment = UIControlContentHorizontalAlignmentLeft;
+
         self.accountButton.titleEdgeInsets = UIEdgeInsetsMake(0, 4, 0, -4);
         self.accountButton.imageView.contentMode = UIViewContentModeScaleAspectFit;
         self.accountButton.titleLabel.lineBreakMode = NSLineBreakByWordWrapping;
         self.accountBtnItem = [[UIBarButtonItem alloc] initWithCustomView:self.accountButton];
     }
+
     [self updateAccountInfo];
+    
     return self.accountBtnItem;
 }
 
 - (void)restoreHighlightedSelection {
+    // Restore the selected row when the view appears again
     NSIndexPath *indexPath = [NSIndexPath indexPathForRow:self.lastSelectedIndex inSection:0];
     [self.tableView selectRowAtIndexPath:indexPath animated:NO scrollPosition:UITableViewScrollPositionNone];
 }
 
-- (NSInteger)tableView:(UITableView *)tableView numberOfRowsInSection:(NSInteger)section {
+- (NSInteger)tableView:(UITableView *)tableView numberOfRowsInSection:(NSInteger)section
+{
     return self.options.count;
 }
 
-- (UITableViewCell *)tableView:(UITableView *)tableView cellForRowAtIndexPath:(NSIndexPath *)indexPath {
+- (UITableViewCell *)tableView:(UITableView *)tableView cellForRowAtIndexPath:(NSIndexPath *)indexPath
+{
     UITableViewCell *cell = [tableView dequeueReusableCellWithIdentifier:@"cell"];
     if (cell == nil) {
         cell = [[UITableViewCell alloc] initWithStyle:UITableViewCellStyleDefault reuseIdentifier:@"cell"];
@@ -207,9 +214,15 @@
     cell.textLabel.font = [UIFont systemFontOfSize:16 weight:UIFontWeightMedium];
     cell.backgroundColor = UIColor.clearColor;
     cell.tintColor = [UIColor colorWithRed:0.72 green:0.56 blue:1.0 alpha:1.0];
-    [self drawNiyoSelectionForCell:cell];
-
-    UIImage *origImage = [UIImage systemImageNamed:[self.options[indexPath.row] performSelector:@selector(imageName)]];
+    UIView *selectedBackground = [[UIView alloc] initWithFrame:cell.bounds];
+    selectedBackground.backgroundColor = [UIColor colorWithRed:0.36 green:0.16 blue:0.62 alpha:0.42];
+    selectedBackground.layer.cornerRadius = 12.0;
+    selectedBackground.layer.borderWidth = 1.0;
+    selectedBackground.layer.borderColor = [UIColor colorWithRed:0.70 green:0.52 blue:1.0 alpha:0.85].CGColor;
+    cell.selectedBackgroundView = selectedBackground;
+    
+    UIImage *origImage = [UIImage systemImageNamed:[self.options[indexPath.row]
+        performSelector:@selector(imageName)]];
     if (origImage) {
         UIGraphicsImageRenderer *renderer = [[UIGraphicsImageRenderer alloc] initWithSize:CGSizeMake(40, 40)];
         UIImage *image = [renderer imageWithActions:^(UIGraphicsImageRendererContext*_Nonnull myContext) {
@@ -219,17 +232,21 @@
         cell.imageView.image = [image imageWithRenderingMode:UIImageRenderingModeAlwaysTemplate];
         cell.imageView.tintColor = [UIColor colorWithRed:0.72 green:0.56 blue:1.0 alpha:1.0];
     }
-
+    
     if (cell.imageView.image == nil) {
         cell.imageView.layer.magnificationFilter = kCAFilterNearest;
         cell.imageView.layer.minificationFilter = kCAFilterNearest;
-        cell.imageView.image = [[UIImage imageNamed:[self.options[indexPath.row] performSelector:@selector(imageName)]] _imageWithSize:CGSizeMake(40, 40)];
+        cell.imageView.image = [UIImage imageNamed:[self.options[indexPath.row]
+            performSelector:@selector(imageName)]];
+        cell.imageView.image = [cell.imageView.image _imageWithSize:CGSizeMake(40, 40)];
     }
     return cell;
 }
 
-- (void)tableView:(UITableView *)tableView didSelectRowAtIndexPath:(NSIndexPath *)indexPath {
+- (void)tableView:(UITableView *)tableView didSelectRowAtIndexPath:(NSIndexPath *)indexPath
+{
     LauncherMenuCustomItem *selected = self.options[indexPath.row];
+    
     if (selected.action != nil) {
         [self restoreHighlightedSelection];
         ((LauncherMenuCustomItem *)selected).action();
@@ -239,7 +256,7 @@
         } else {
             self.options[self.lastSelectedIndex].vcArray = contentNavigationController.viewControllers;
             [contentNavigationController setViewControllers:selected.vcArray animated:NO];
-            self.lastSelectedIndex = (int)indexPath.row;
+            self.lastSelectedIndex = indexPath.row;
         }
         selected.vcArray[0].navigationItem.rightBarButtonItem = self.accountBtnItem;
         selected.vcArray[0].navigationItem.leftBarButtonItem = self.splitViewController.displayModeButtonItem;
@@ -260,15 +277,178 @@
         setPrefObject(@"internal.selected_account", BaseAuthenticator.current.authData[@"username"]);
         [self updateAccountInfo];
         if (sender != self.accountButton) {
+            // Called from the play button, so call back to continue
             [sender sendActionsForControlEvents:UIControlEventPrimaryActionTriggered];
         }
     };
     vc.modalPresentationStyle = UIModalPresentationPopover;
     vc.preferredContentSize = CGSizeMake(350, 250);
+
     UIPopoverPresentationController *popoverController = vc.popoverPresentationController;
     popoverController.sourceView = sender;
     popoverController.sourceRect = sender.bounds;
+    popoverController.permittedArrowDirections = UIPopoverArrowDirectionAny;
+    popoverController.delegate = vc;
     [self presentViewController:vc animated:YES completion:nil];
+}
+
+- (void)updateAccountInfo {
+    NSDictionary *selected = BaseAuthenticator.current.authData;
+    CGSize size = CGSizeMake(contentNavigationController.view.frame.size.width, contentNavigationController.view.frame.size.height);
+    
+    if (selected == nil) {
+        if((size.width / 3) > 200) {
+            [self.accountButton setAttributedTitle:[[NSAttributedString alloc] initWithString:localize(@"login.option.select", nil)] forState:UIControlStateNormal];
+        } else {
+            [self.accountButton setAttributedTitle:(NSAttributedString *)@"" forState:UIControlStateNormal];
+        }
+        [self.accountButton setImage:[UIImage imageNamed:@"DefaultAccount"] forState:UIControlStateNormal];
+        [self.accountButton sizeToFit];
+        return;
+    }
+
+    // Remove the prefix "Demo." if there is
+    BOOL isDemo = [selected[@"username"] hasPrefix:@"Demo."];
+    NSMutableAttributedString *title = [[NSMutableAttributedString alloc] initWithString:[selected[@"username"] substringFromIndex:(isDemo?5:0)]];
+
+    // Check if we're switching between demo and full mode
+    BOOL shouldUpdateProfiles = (getenv("DEMO_LOCK")!=NULL) != isDemo;
+
+    // Reset states
+    unsetenv("DEMO_LOCK");
+    setenv("GAME_DIR", [NSString stringWithFormat:@"%s/Library/Application Support/minecraft", getenv("AME_HOME")].UTF8String, 1);
+
+    id subtitle;
+    if (isDemo) {
+        subtitle = localize(@"login.option.demo", nil);
+        setenv("DEMO_LOCK", "1", 1);
+        setenv("GAME_DIR", [NSString stringWithFormat:@"%s/.demo", getenv("AME_HOME")].UTF8String, 1);
+    } else if (selected[@"xboxGamertag"] == nil) {
+        subtitle = localize(@"login.option.local", nil);
+    } else {
+        // Display the Xbox gamertag for online accounts
+        subtitle = selected[@"xboxGamertag"];
+    }
+
+    subtitle = [[NSAttributedString alloc] initWithString:subtitle attributes:@{NSFontAttributeName: [UIFont systemFontOfSize:12]}];
+    [title appendAttributedString:[[NSAttributedString alloc] initWithString:@"\n" attributes:nil]];
+    [title appendAttributedString:subtitle];
+    
+    if((size.width / 3) > 200) {
+        [self.accountButton setAttributedTitle:title forState:UIControlStateNormal];
+    } else {
+        [self.accountButton setAttributedTitle:(NSAttributedString *)@"" forState:UIControlStateNormal];
+    }
+    
+    // TODO: Add caching mechanism for profile pictures
+    NSURL *url = [NSURL URLWithString:[selected[@"profilePicURL"] stringByReplacingOccurrencesOfString:@"\\/" withString:@"/"]];
+    UIImage *placeholder = [UIImage imageNamed:@"DefaultAccount"];
+    [self.accountButton setImageForState:UIControlStateNormal withURL:url placeholderImage:placeholder];
+    [self.accountButton.imageView setImageWithURL:url placeholderImage:placeholder];
+    [self.accountButton sizeToFit];
+
+    // Update profiles and local version list if needed
+    if (shouldUpdateProfiles) {
+        [contentNavigationController fetchLocalVersionList];
+        [contentNavigationController performSelector:@selector(reloadProfileList)];
+    }
+
+    // Update tableView whenever we have
+    UITableViewController *tableVC = contentNavigationController.viewControllers.lastObject;
+    if ([tableVC isKindOfClass:UITableViewController.class]) {
+        [tableVC.tableView reloadData];
+    }
+}
+
+- (void)displayProgress:(NSString *)status {
+    if (status == nil) {
+        [(UIActivityIndicatorView *)self.toolbarItems[0].customView stopAnimating];
+    } else {
+        self.toolbarItems[1].title = status;
+    }
+}
+
+- (void)enableJITWithAltKit {
+    [ALTServerManager.sharedManager startDiscovering];
+    [ALTServerManager.sharedManager autoconnectWithCompletionHandler:^(ALTServerConnection *connection, NSError *error) {
+        if (error) {
+            NSLog(@"[AltKit] Could not auto-connect to server. %@", error.localizedRecoverySuggestion);
+            [self displayProgress:localize(@"login.jit.fail", nil)];
+            [self displayProgress:nil];
+        }
+        [connection enableUnsignedCodeExecutionWithCompletionHandler:^(BOOL success, NSError *error) {
+            if (success) {
+                NSLog(@"[AltKit] Successfully enabled JIT compilation!");
+                [ALTServerManager.sharedManager stopDiscovering];
+                [self displayProgress:localize(@"login.jit.enabled", nil)];
+                [self displayProgress:nil];
+            } else {
+                NSLog(@"[AltKit] Error enabling JIT: %@", error.localizedRecoverySuggestion);
+                [self displayProgress:localize(@"login.jit.fail", nil)];
+                [self displayProgress:nil];
+            }
+            [connection disconnect];
+        }];
+    }];
+}
+
+- (NSArray<NSURL *> *)collectDiagnosticReportItems {
+    NSFileManager *fm = NSFileManager.defaultManager;
+    const char *homeEnv = getenv("AME_HOME");
+    if (!homeEnv || !*homeEnv) return @[];
+    NSString *home = @(homeEnv);
+    NSMutableArray<NSURL *> *items = [NSMutableArray array];
+
+    for (NSString *name in @[@"latestlog.txt", @"latestlog.old.txt", @"mobilegl.log"]) {
+        NSString *path = [home stringByAppendingPathComponent:name];
+        if ([fm fileExistsAtPath:path]) {
+            [items addObject:[NSURL fileURLWithPath:path]];
+        }
+    }
+
+    NSDirectoryEnumerator *enumerator =
+        [fm enumeratorAtURL:[NSURL fileURLWithPath:home]
+  includingPropertiesForKeys:@[NSURLIsDirectoryKey]
+                     options:NSDirectoryEnumerationSkipsHiddenFiles
+                errorHandler:nil];
+    NSUInteger hsErrFound = 0;
+    static NSSet<NSString *> *skipDirNames;
+    if (!skipDirNames) {
+        skipDirNames = [NSSet setWithArray:@[@"versions", @"libraries", @"assets", @"java_runtimes"]];
+    }
+    for (NSURL *url in enumerator) {
+        NSNumber *isDir = nil;
+        [url getResourceValue:&isDir forKey:NSURLIsDirectoryKey error:nil];
+        NSString *name = url.lastPathComponent;
+        if (isDir.boolValue && [skipDirNames containsObject:name]) {
+            [enumerator skipDescendants];
+            continue;
+        }
+        if (!isDir.boolValue && [name hasPrefix:@"hs_err_pid"] && [url.pathExtension isEqualToString:@"log"]) {
+            [items addObject:url];
+            hsErrFound++;
+            if (hsErrFound >= 3) break; // don't attach an unbounded number
+        }
+    }
+
+    NSMutableString *info = [NSMutableString string];
+    [info appendFormat:@"Amethyst version: %@-%s\n", NSBundle.mainBundle.infoDictionary[@"CFBundleShortVersionString"], CONFIG_TYPE];
+    [info appendFormat:@"Commit: %s (%s)\n", CONFIG_COMMIT, CONFIG_BRANCH];
+    [info appendFormat:@"Device: %@\n", [HostManager GetModelName]];
+    [info appendFormat:@"OS: %@\n", UIDevice.currentDevice.completeOSVersion];
+    const char *installType = getenv("AME_DETECTEDINST");
+    [info appendFormat:@"Install type: %s\n", installType ? installType : "unknown"];
+    [info appendFormat:@"Renderer: %@\n", [PLProfiles resolveKeyForCurrentProfile:@"renderer"]];
+
+    NSString *infoPath = [NSTemporaryDirectory() stringByAppendingPathComponent:@"amethyst_diagnostic_info.txt"];
+    NSError *writeError = nil;
+    if ([info writeToFile:infoPath atomically:YES encoding:NSUTF8StringEncoding error:&writeError]) {
+        [items addObject:[NSURL fileURLWithPath:infoPath]];
+    } else {
+        NSLog(@"[LauncherMenuViewController] Failed to write diagnostic info file: %@", writeError);
+    }
+
+    return items;
 }
 
 @end
