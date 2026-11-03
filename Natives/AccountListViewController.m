@@ -184,8 +184,15 @@
             [self presentViewController:controller animated:YES completion:nil];
         } else {
             id callback = ^(id status, BOOL success) {
-                self.whenItemSelected();
-                [self dismissViewControllerAnimated:YES completion:nil];
+                dispatch_async(dispatch_get_main_queue(), ^{
+                    // Keep the account picker open if saving the local account failed.
+                    // BaseAuthenticator already displays the underlying file error.
+                    if (!success) {
+                        return;
+                    }
+                    self.whenItemSelected();
+                    [self dismissViewControllerAnimated:YES completion:nil];
+                });
             };
             [[[LocalAuthenticator alloc] initWithInput:usernameField.text] loginWithCallback:callback];
         }
