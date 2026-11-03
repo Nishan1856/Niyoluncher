@@ -34,7 +34,9 @@ extern UIWindow *mainWindow;
     toolbar.shadowColor = [UIColor colorWithWhite:1.0 alpha:0.10];
     UIToolbar *toolbarAppearance = UIToolbar.appearance;
     toolbarAppearance.standardAppearance = toolbar;
-    toolbarAppearance.scrollEdgeAppearance = toolbar;
+    if (@available(iOS 15.0, *)) {
+        toolbarAppearance.scrollEdgeAppearance = toolbar;
+    }
     toolbarAppearance.compactAppearance = toolbar;
     toolbarAppearance.tintColor = violet;
     toolbarAppearance.barStyle = UIBarStyleBlack;
