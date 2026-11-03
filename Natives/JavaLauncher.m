@@ -396,7 +396,7 @@ int launchJVM(NSString *username, id launchTarget, int width, int height, int mi
     margv[++margc] = "-Damethyst.noUpcalls=true";
 
     if (lwjglNativeSubfolder) {
-        NSString *sdlDylibPath = [[frameworksPath stringByAppendingPathComponent:lwjglNativeSubfolder] stringByAppendingPathComponent:@"libSDL3_controlify.dylib"];
+        NSString *sdlDylibPath = [[frameworksPath stringByAppendingPathComponent:lwjglNativeSubfolder] stringByAppendingPathComponent:@"libSDL3.dylib"];
         if ([fm fileExistsAtPath:sdlDylibPath]) {
             margv[++margc] = [NSString stringWithFormat:@"-Ddev.isxander.sdl.library=%@", sdlDylibPath].UTF8String;
         }
