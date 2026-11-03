@@ -47,6 +47,9 @@ BOOL validateVirtualMemorySpace(size_t size) {
 void init_loadDefaultEnv() {
     /* Define default env */
 
+    // Native Simple Voice Chat codec bridges load from the app bundle.
+    setenv("BUNDLE_PATH", NSBundle.mainBundle.bundlePath.UTF8String, 1);
+
     // Silent Caciocavallo NPE error in locating Android-only lib
     setenv("LD_LIBRARY_PATH", "", 1);
 
