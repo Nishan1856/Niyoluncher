@@ -15,7 +15,9 @@ extern NSMutableDictionary *prefDict;
 
 - (void)viewDidLoad {
     [super viewDidLoad];
-    self.view.backgroundColor = UIColor.systemBackgroundColor;
+    self.view.backgroundColor = [UIColor colorWithRed:0.018 green:0.014 blue:0.035 alpha:1.0];
+    self.primaryBackgroundStyle = UISplitViewControllerBackgroundStyleSidebar;
+    self.maximumPrimaryColumnWidth = MIN(320.0, self.view.bounds.size.width * 0.34);
     if ([getPrefObject(@"control.control_safe_area") length] == 0) {
         setPrefObject(@"control.control_safe_area", NSStringFromUIEdgeInsets(getDefaultSafeArea()));
     }
@@ -29,7 +31,8 @@ extern NSMutableDictionary *prefDict;
     self.viewControllers = @[masterVc, detailVc];
     [self changeDisplayModeForSize:self.view.frame.size];
     
-    self.maximumPrimaryColumnWidth = self.view.bounds.size.width * 0.95;
+    self.minimumPrimaryColumnWidth = 250.0;
+    self.maximumPrimaryColumnWidth = MIN(320.0, self.view.bounds.size.width * 0.34);
 }
 
 - (void)splitViewController:(UISplitViewController *)svc willChangeToDisplayMode:(UISplitViewControllerDisplayMode)displayMode {
