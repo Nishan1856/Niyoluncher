@@ -283,9 +283,16 @@ static GameSurfaceView* pojavWindow;
     NSError *sessionError = nil;
     AVAudioSessionCategory category;
     AVAudioSessionCategoryOptions options = 0;
-    if(getPrefBool(@"video.allow_microphone")) {
+    AVAudioSessionMode mode = AVAudioSessionModeDefault;
+    BOOL microphoneEnabled = getPrefBool(@"video.allow_microphone");
+    if(microphoneEnabled) {
         category = AVAudioSessionCategoryPlayAndRecord;
-        options |= AVAudioSessionCategoryOptionAllowAirPlay | AVAudioSessionCategoryOptionAllowBluetoothA2DP | AVAudioSessionCategoryOptionDefaultToSpeaker;
+        mode = AVAudioSessionModeVoiceChat;
+        // HFP is required for Bluetooth microphone input; A2DP alone is output-only.
+        options |= AVAudioSessionCategoryOptionAllowAirPlay |
+                   AVAudioSessionCategoryOptionAllowBluetooth |
+                   AVAudioSessionCategoryOptionAllowBluetoothA2DP |
+                   AVAudioSessionCategoryOptionDefaultToSpeaker;
     } else if(getPrefBool(@"video.silence_with_switch")) {
         category = AVAudioSessionCategorySoloAmbient;
     } else {
@@ -295,8 +302,16 @@ static GameSurfaceView* pojavWindow;
         options |= AVAudioSessionCategoryOptionMixWithOthers;
     }
     AVAudioSession *session = AVAudioSession.sharedInstance;
-    [session setCategory:category withOptions:options error:&sessionError];
-    [session setActive:YES error:&sessionError];
+    if (![session setCategory:category mode:mode options:options error:&sessionError]) {
+        NSLog(@"[Audio] Failed to configure AVAudioSession: %@", sessionError);
+    }
+    if (![session setActive:YES error:&sessionError]) {
+        NSLog(@"[Audio] Failed to activate AVAudioSession: %@", sessionError);
+    }
+    if (microphoneEnabled) {
+        NSLog(@"[Audio] Voice-chat audio session active; record permission=%ld, inputAvailable=%d",
+              (long)session.recordPermission, session.isInputAvailable);
+    }
 }
 
 - (void)updateJetsamControl {
