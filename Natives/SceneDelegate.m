@@ -5,85 +5,52 @@
 extern UIWindow *mainWindow;
 
 @interface SceneDelegate ()
+
 @end
 
 @implementation SceneDelegate
 
-- (void)applyNiyoLuxuryAppearance {
-    UIColor *background = [UIColor colorWithRed:0.018 green:0.014 blue:0.035 alpha:1.0];
-    UIColor *surface = [UIColor colorWithRed:0.055 green:0.040 blue:0.090 alpha:1.0];
-    UIColor *violet = [UIColor colorWithRed:0.62 green:0.34 blue:1.0 alpha:1.0];
-    UIColor *muted = [UIColor colorWithRed:0.70 green:0.66 blue:0.80 alpha:1.0];
-
-    UINavigationBarAppearance *navigation = [UINavigationBarAppearance new];
-    [navigation configureWithOpaqueBackground];
-    navigation.backgroundColor = surface;
-    navigation.titleTextAttributes = @{NSForegroundColorAttributeName: UIColor.whiteColor};
-    navigation.largeTitleTextAttributes = @{NSForegroundColorAttributeName: UIColor.whiteColor};
-    navigation.shadowColor = [UIColor colorWithWhite:1.0 alpha:0.10];
-    UINavigationBar *navigationBar = UINavigationBar.appearance;
-    navigationBar.standardAppearance = navigation;
-    navigationBar.scrollEdgeAppearance = navigation;
-    navigationBar.compactAppearance = navigation;
-    navigationBar.tintColor = violet;
-    navigationBar.barStyle = UIBarStyleBlack;
-
-    UIToolbarAppearance *toolbar = [UIToolbarAppearance new];
-    [toolbar configureWithOpaqueBackground];
-    toolbar.backgroundColor = surface;
-    toolbar.shadowColor = [UIColor colorWithWhite:1.0 alpha:0.10];
-    UIToolbar *toolbarAppearance = UIToolbar.appearance;
-    toolbarAppearance.standardAppearance = toolbar;
-    if (@available(iOS 15.0, *)) {
-        toolbarAppearance.scrollEdgeAppearance = toolbar;
-    }
-    toolbarAppearance.compactAppearance = toolbar;
-    toolbarAppearance.tintColor = violet;
-    toolbarAppearance.barStyle = UIBarStyleBlack;
-
-    UITableView.appearance.backgroundColor = background;
-    UITableView.appearance.separatorColor = [UIColor colorWithRed:0.42 green:0.30 blue:0.62 alpha:0.30];
-    UITableViewCell.appearance.backgroundColor = UIColor.clearColor;
-    UISwitch.appearance.onTintColor = violet;
-    UIActivityIndicatorView.appearance.color = violet;
-    UIButton.appearance.tintColor = violet;
-    UILabel.appearance.textColor = UIColor.whiteColor;
-    UITextField.appearance.tintColor = violet;
-    UITextView.appearance.tintColor = violet;
-    UIView.appearance.tintColor = violet;
-
-    self.window.backgroundColor = background;
-    self.window.tintColor = violet;
-    (void)muted;
-}
 
 - (void)scene:(UIScene *)scene willConnectToSession:(UISceneSession *)session options:(UISceneConnectionOptions *)connectionOptions {
     UIWindowScene *windowScene = (UIWindowScene *)scene;
     self.window = [[UIWindow alloc] initWithWindowScene:windowScene];
     self.window.frame = windowScene.coordinateSpace.bounds;
-    [self applyNiyoLuxuryAppearance];
     mainWindow = self.window;
     launchInitialViewController(self.window);
     [self.window makeKeyAndVisible];
 }
 
+
 - (void)sceneDidDisconnect:(UIScene *)scene {
     // Called as the scene is being released by the system.
+    // This occurs shortly after the scene enters the background, or when its session is discarded.
+    // Release any resources associated with this scene that can be re-created the next time the scene connects.
+    // The scene may re-connect later, as its session was not neccessarily discarded (see `application:didDiscardSceneSessions` instead).
 }
+
 
 - (void)sceneDidBecomeActive:(UIScene *)scene {
-    // Resume app work when the scene becomes active.
+    // Called when the scene has moved from an inactive state to an active state.
+    // Use this method to restart any tasks that were paused (or not yet started) when the scene was inactive.
 }
+
 
 - (void)sceneWillResignActive:(UIScene *)scene {
-    // The scene is about to become inactive.
+    // Called when the scene will move from an active state to an inactive state.
+    // This may occur due to temporary interruptions (ex. an incoming phone call).
 }
+
 
 - (void)sceneWillEnterForeground:(UIScene *)scene {
-    // The scene is entering the foreground.
+    // Called as the scene transitions from the background to the foreground.
+    // Use this method to undo the changes made on entering the background.
 }
 
+
 - (void)sceneDidEnterBackground:(UIScene *)scene {
+    // Called as the scene transitions from the foreground to the background.
+    // Use this method to save data, release shared resources, and store enough scene-specific state information
+    // to restore the scene back to its current state.
     CallbackBridge_pauseGameIfNeed();
 }
 
