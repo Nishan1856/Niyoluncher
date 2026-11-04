@@ -593,6 +593,12 @@ final class SDL3Bridge {
         }
         exitArmed = true;
         trace("[SDL3 TRACE] shutdown: " + why + ", exit watchdog armed");
+        if (SDL3Config.TRACE) {
+            StackTraceElement[] caller = Thread.currentThread().getStackTrace();
+            for (int i = 0; i < caller.length; i++) {
+                trace("[SDL3 TRACE] shutdown caller: " + caller[i].toString());
+            }
+        }
         Thread watchdog = new Thread(new Runnable() {
             public void run() {
                 try {
@@ -600,7 +606,7 @@ final class SDL3Bridge {
                 } catch (InterruptedException e) {
                     return;
                 }
-                trace("[SDL3 TRACE] shutdown still not finished after 5s, calling System.exit(0)");
+                trace("[SDL3 TRACE] WATCHDOG_EXIT_NOW: shutdown still not finished after 5s; calling System.exit(0)");
                 Thread hard = new Thread(new Runnable() {
                     public void run() {
                         try {
