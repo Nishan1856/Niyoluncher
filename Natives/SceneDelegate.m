@@ -12,15 +12,15 @@ extern UIWindow *mainWindow;
 - (void)applyNiyoLuxuryAppearance {
     UIColor *background = [UIColor colorWithRed:0.018 green:0.014 blue:0.035 alpha:1.0];
     UIColor *surface = [UIColor colorWithRed:0.055 green:0.040 blue:0.090 alpha:1.0];
-    UIColor *violet = [UIColor colorWithRed:0.62 green:0.34 blue:1.0 alpha:1.0];
-    UIColor *muted = [UIColor colorWithRed:0.70 green:0.66 blue:0.80 alpha:1.0];
+    UIColor *violet = [UIColor colorWithRed:0.62 green:0.30 blue:1.0 alpha:1.0];
+    UIColor *gold = [UIColor colorWithRed:0.96 green:0.70 blue:0.24 alpha:1.0];
 
     UINavigationBarAppearance *navigation = [UINavigationBarAppearance new];
     [navigation configureWithOpaqueBackground];
     navigation.backgroundColor = surface;
     navigation.titleTextAttributes = @{NSForegroundColorAttributeName: UIColor.whiteColor};
     navigation.largeTitleTextAttributes = @{NSForegroundColorAttributeName: UIColor.whiteColor};
-    navigation.shadowColor = [UIColor colorWithWhite:1.0 alpha:0.10];
+    navigation.shadowColor = [UIColor colorWithRed:0.62 green:0.30 blue:1.0 alpha:0.32];
     UINavigationBar *navigationBar = UINavigationBar.appearance;
     navigationBar.standardAppearance = navigation;
     navigationBar.scrollEdgeAppearance = navigation;
@@ -31,7 +31,7 @@ extern UIWindow *mainWindow;
     UIToolbarAppearance *toolbar = [UIToolbarAppearance new];
     [toolbar configureWithOpaqueBackground];
     toolbar.backgroundColor = surface;
-    toolbar.shadowColor = [UIColor colorWithWhite:1.0 alpha:0.10];
+    toolbar.shadowColor = [UIColor colorWithRed:0.62 green:0.30 blue:1.0 alpha:0.28];
     UIToolbar *toolbarAppearance = UIToolbar.appearance;
     toolbarAppearance.standardAppearance = toolbar;
     if (@available(iOS 15.0, *)) {
@@ -45,6 +45,12 @@ extern UIWindow *mainWindow;
     UITableView.appearance.separatorColor = [UIColor colorWithRed:0.42 green:0.30 blue:0.62 alpha:0.30];
     UITableViewCell.appearance.backgroundColor = UIColor.clearColor;
     UISwitch.appearance.onTintColor = violet;
+    UISegmentedControl.appearance.selectedSegmentTintColor = [UIColor colorWithRed:0.34 green:0.16 blue:0.58 alpha:1.0];
+    UISegmentedControl.appearance.backgroundColor = surface;
+    UIPageControl.appearance.currentPageIndicatorTintColor = gold;
+    UIPageControl.appearance.pageIndicatorTintColor = [gold colorWithAlphaComponent:0.28];
+    UISlider.appearance.minimumTrackTintColor = violet;
+    UISlider.appearance.maximumTrackTintColor = [UIColor colorWithWhite:1.0 alpha:0.18];
     UIActivityIndicatorView.appearance.color = violet;
     UIButton.appearance.tintColor = violet;
     UILabel.appearance.textColor = UIColor.whiteColor;
@@ -54,7 +60,6 @@ extern UIWindow *mainWindow;
 
     self.window.backgroundColor = background;
     self.window.tintColor = violet;
-    (void)muted;
 }
 
 - (void)scene:(UIScene *)scene willConnectToSession:(UISceneSession *)session options:(UISceneConnectionOptions *)connectionOptions {
