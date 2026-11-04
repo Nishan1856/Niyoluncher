@@ -215,10 +215,10 @@
     cell.backgroundColor = UIColor.clearColor;
     cell.tintColor = [UIColor colorWithRed:0.72 green:0.56 blue:1.0 alpha:1.0];
     UIView *selectedBackground = [[UIView alloc] initWithFrame:cell.bounds];
-    selectedBackground.backgroundColor = [UIColor colorWithRed:0.36 green:0.16 blue:0.62 alpha:0.42];
+    selectedBackground.backgroundColor = [UIColor colorWithRed:0.34 green:0.12 blue:0.64 alpha:0.52];
     selectedBackground.layer.cornerRadius = 12.0;
     selectedBackground.layer.borderWidth = 1.0;
-    selectedBackground.layer.borderColor = [UIColor colorWithRed:0.70 green:0.52 blue:1.0 alpha:0.85].CGColor;
+    selectedBackground.layer.borderColor = [UIColor colorWithRed:0.96 green:0.70 blue:0.24 alpha:0.72].CGColor;
     cell.selectedBackgroundView = selectedBackground;
     
     UIImage *origImage = [UIImage systemImageNamed:[self.options[indexPath.row]
@@ -230,7 +230,7 @@
             [origImage drawInRect:CGRectMake(20 - origImage.size.width*scaleFactor/2, 0, origImage.size.width*scaleFactor, 40)];
         }];
         cell.imageView.image = [image imageWithRenderingMode:UIImageRenderingModeAlwaysTemplate];
-        cell.imageView.tintColor = [UIColor colorWithRed:0.72 green:0.56 blue:1.0 alpha:1.0];
+        cell.imageView.tintColor = [UIColor colorWithRed:0.76 green:0.54 blue:1.0 alpha:1.0];
     }
     
     if (cell.imageView.image == nil) {
