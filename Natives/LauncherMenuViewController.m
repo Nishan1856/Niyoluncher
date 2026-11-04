@@ -9,7 +9,6 @@
 #import "LauncherPreferences.h"
 #import "LauncherPreferencesViewController.h"
 #import "LauncherProfilesViewController.h"
-#import "installer/ModrinthModsViewController.h"
 #import "PLProfiles.h"
 #import "UIButton+AFNetworking.h"
 #import "UIImageView+AFNetworking.h"
@@ -56,11 +55,6 @@
     [super viewDidLoad];
     
     self.isInitialVc = YES;
-    self.view.backgroundColor = [UIColor colorWithRed:0.018 green:0.014 blue:0.035 alpha:1.0];
-    self.tableView.backgroundColor = self.view.backgroundColor;
-    self.tableView.separatorStyle = UITableViewCellSeparatorStyleNone;
-    self.tableView.rowHeight = 58.0;
-    self.tableView.contentInset = UIEdgeInsetsMake(8, 0, 18, 0);
     
     UIImageView *titleView = [[UIImageView alloc] initWithImage:[UIImage imageNamed:@"AppLogo"]];
     [titleView setContentMode:UIViewContentModeScaleAspectFit];
@@ -71,9 +65,6 @@
         [LauncherMenuCustomItem vcClass:LauncherNewsViewController.class],
         [LauncherMenuCustomItem vcClass:LauncherProfilesViewController.class],
         [LauncherMenuCustomItem vcClass:LauncherPreferencesViewController.class],
-        [LauncherMenuCustomItem vcClass:ModrinthModsViewController.class],
-        [LauncherMenuCustomItem vcClass:LauncherResourcePacksViewController.class],
-        [LauncherMenuCustomItem vcClass:LauncherShaderPacksViewController.class],
     ].mutableCopy;
     if (realUIIdiom != UIUserInterfaceIdiomTV) {
         [self.options addObject:(id)[LauncherMenuCustomItem
@@ -210,16 +201,6 @@
     }
 
     cell.textLabel.text = [self.options[indexPath.row] title];
-    cell.textLabel.textColor = UIColor.whiteColor;
-    cell.textLabel.font = [UIFont systemFontOfSize:16 weight:UIFontWeightMedium];
-    cell.backgroundColor = UIColor.clearColor;
-    cell.tintColor = [UIColor colorWithRed:0.72 green:0.56 blue:1.0 alpha:1.0];
-    UIView *selectedBackground = [[UIView alloc] initWithFrame:cell.bounds];
-    selectedBackground.backgroundColor = [UIColor colorWithRed:0.36 green:0.16 blue:0.62 alpha:0.42];
-    selectedBackground.layer.cornerRadius = 12.0;
-    selectedBackground.layer.borderWidth = 1.0;
-    selectedBackground.layer.borderColor = [UIColor colorWithRed:0.70 green:0.52 blue:1.0 alpha:0.85].CGColor;
-    cell.selectedBackgroundView = selectedBackground;
     
     UIImage *origImage = [UIImage systemImageNamed:[self.options[indexPath.row]
         performSelector:@selector(imageName)]];
@@ -230,7 +211,6 @@
             [origImage drawInRect:CGRectMake(20 - origImage.size.width*scaleFactor/2, 0, origImage.size.width*scaleFactor, 40)];
         }];
         cell.imageView.image = [image imageWithRenderingMode:UIImageRenderingModeAlwaysTemplate];
-        cell.imageView.tintColor = [UIColor colorWithRed:0.72 green:0.56 blue:1.0 alpha:1.0];
     }
     
     if (cell.imageView.image == nil) {
