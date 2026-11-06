@@ -1,10 +1,24 @@
 #import <UIKit/UIKit.h>
 #import <objc/runtime.h>
+#import <dlfcn.h>
 #import "LauncherPreferences.h"
 #import "UIKit+hook.h"
 #import "utils.h"
 
 __weak UIWindow *mainWindow, *externalWindow;
+// Resolve this private UIKit feature dynamically. A direct symbol reference can
+// fail the link when building with an older iOS SDK, even though the app can run
+// on newer iPadOS versions where UIKit exports it.
+BOOL UIIsSolariumEnabled(void) {
+    typedef BOOL (*UISolariumEnabledFunction)(void);
+    static UISolariumEnabledFunction function = NULL;
+    static dispatch_once_t onceToken;
+    dispatch_once(&onceToken, ^{
+        function = (UISolariumEnabledFunction)dlsym(RTLD_DEFAULT, "_UISolariumEnabled");
+    });
+    return function ? function() : NO;
+}
+
 
 void swizzle(Class class, SEL originalAction, SEL swizzledAction) {
     method_exchangeImplementations(class_getInstanceMethod(class, originalAction), class_getInstanceMethod(class, swizzledAction));
