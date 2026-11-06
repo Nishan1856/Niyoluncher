@@ -51,7 +51,7 @@ static void *ProgressObserverContext = &ProgressObserverContext;
     UIToolbar *targetToolbar = self.toolbar;
     self.view.backgroundColor = [UIColor colorWithRed:0.018 green:0.014 blue:0.035 alpha:1.0];
     self.toolbar.tintColor = [UIColor colorWithRed:0.72 green:0.56 blue:1.0 alpha:1.0];
-    BOOL hasLiquidGlass = _UISolariumEnabled && _UISolariumEnabled();
+    BOOL hasLiquidGlass = UIIsSolariumEnabled();
     
     if(hasLiquidGlass) {
         self.versionTextField = [[PickTextField alloc] initWithFrame:CGRectMake(0, 0, MIN(self.view.frame.size.width,self.view.frame.size.height)*0.8 - 40, 36)];
